@@ -22,7 +22,10 @@ function Chart() {
   const { coinId } = useOutletContext<ChartProps>();
   const { isLoading, data } = useQuery<IHistoricalData[]>(
     ["ohlcv", coinId],
-    () => fetchCoinHistory(coinId)
+    () => fetchCoinHistory(coinId),
+    {
+      refetchInterval: 10000,
+    }
   );
 
   return (
@@ -33,19 +36,41 @@ function Chart() {
         <ApexCharts
           series={[
             {
-              data: [1, 2, 3, 4, 5, 6],
-            },
-            {
-              data: [6, 5, 4, 3, 2, 1],
+              name: "Price",
+              data: data?.map((price) => Number(price.close)) as number[],
             },
           ]}
           options={{
+            theme: {
+              mode: "dark",
+            },
             chart: {
-              height: 500,
-              width: 500,
+              height: 400,
+              width: 700,
+              toolbar: {
+                show: false,
+              },
+              background: "transparent",
+            },
+            grid: { show: false },
+            stroke: {
+              curve: "smooth",
+              width: 4,
+            },
+            yaxis: {
+              show: false,
+            },
+            xaxis: {
+              type: "datetime",
+              labels: {
+                style: {
+                  colors: "#9c88ff",
+                },
+              },
+              categories: data?.map((price) => price.time_close),
             },
           }}
-          type="candlestick"
+          type="line"
         />
       )}
     </div>

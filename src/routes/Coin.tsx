@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useQuery } from "react-query";
 import { fetchCoinInfo, fetchCoinTickers } from "../api";
+import { Helmet } from "react-helmet";
+import { MdOutlineArrowBackIosNew } from "react-icons/md";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -24,7 +26,7 @@ const Loader = styled.span`
 const Header = styled.header`
   height: 15vh;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 `;
 
@@ -32,6 +34,15 @@ const Title = styled.h1`
   color: ${(props) => props.theme.accentColor};
   font-size: 48px;
   font-weight: 400;
+`;
+
+const Button = styled.button`
+  color: white;
+  font-size: 30px;
+  font-weight: 400;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
 `;
 
 const Overview = styled.div`
@@ -88,6 +99,7 @@ interface RouteParams {
 interface RouteState {
   state: {
     name: string;
+    symbol: string;
   };
 }
 
@@ -158,7 +170,10 @@ function Coin() {
   );
   const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>(
     ["tickers", coinId],
-    () => fetchCoinTickers(coinId)
+    () => fetchCoinTickers(coinId),
+    {
+      refetchInterval: 5000,
+    }
   );
   //   const [loading, setLoading] = useState(true);
   //   const [info, setInfo] = useState<InfoData>();
@@ -182,10 +197,27 @@ function Coin() {
 
   return (
     <Container>
+      <Helmet>
+        <title>
+          {state?.name ? state?.name : loading ? "Loading..." : infoData?.name}
+        </title>
+        <link
+          rel="icon"
+          type="image/png"
+          href={`https://coinicons-api.vercel.app/api/icon/${state?.symbol}`}
+          sizes="16x16"
+        />
+      </Helmet>
       <Header>
+        <Button>
+          <Link to={`/`}>
+            <MdOutlineArrowBackIosNew />
+          </Link>
+        </Button>
         <Title>
           {state?.name ? state?.name : loading ? "Loading..." : infoData?.name}
         </Title>
+        <Title>&nbsp;&nbsp;&nbsp;</Title>
       </Header>
       {loading ? (
         <Loader>Loading...</Loader>
@@ -201,8 +233,8 @@ function Coin() {
               <span>{infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
-              <span>Open Source:</span>
-              <span>{infoData?.open_source ? "Yes" : "No"}</span>
+              <span>Price:</span>
+              <span>${tickersData?.quotes.USD.price.toFixed(3)}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
